@@ -1,0 +1,35 @@
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>Settings</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content>
+  <ion-list inset>
+    <ng-container *ngIf="settings.length > 0 else empty">
+      <ion-item *ngFor='let setting of settings'>
+        <ion-label>{{setting.optName}}</ion-label>
+        <ion-input type="text" [(ngModel)]="setting.optValue"></ion-input>
+      </ion-item>
+    </ng-container>
+    <ng-template #empty>
+      <ion-item>
+        <h2>Settings are not available</h2>
+      </ion-item>
+    </ng-template>
+  </ion-list>
+  <div padding>
+    <button ion-button icon-only full (click)="resetDB()" *ngIf="false">
+      <ion-icon name="trash"></ion-icon>
+    </button>
+    <button ion-button icon-only full (click)="viewDB()" *ngIf="false">
+      <ion-icon name="eye"></ion-icon>
+    </button>
+    <button ion-button icon-only full (click)="save()">
+      Save
+    </button>
+  </div>
+</ion-content>
