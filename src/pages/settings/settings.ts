@@ -39,7 +39,7 @@ export class SettingsPage {
     console.log('Loading settings...');
     this.database.getSettings().then(data => {
       this.settings = data;
-      console.log('Settings: ', data);
+      console.log('Settings: ', JSON.stringify(data));
     }, err => {
       console.log('Error loadSettings: ', err);
     });

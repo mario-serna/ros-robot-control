@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Platform, NavController, AlertController, LoadingController } from 'ionic-angular';
 import { DatabaseProvider } from '../../providers/database/database';
 import { RosProvider } from '../../providers/ros/ros';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Component({
   selector: 'page-home',
@@ -15,6 +14,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   width;
   height;
+  quality;
 
   constructor(
     public platform: Platform,
@@ -24,7 +24,7 @@ export class HomePage implements OnInit, OnDestroy {
     public database: DatabaseProvider,
     public rosProvider: RosProvider
   ) {
-    this.rosProvider.connection = new BehaviorSubject(false);
+    this.quality = 25;
     this.isStop = false;
     platform.ready().then((readySource) => {
       this.width = this.platform.width();
@@ -45,8 +45,11 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   showROSCamera() {
-    let height = ((this.width - 32) * 480) / 640;
-    this.rosProvider.showCamera(this.width - 32, height);
+    this.width = this.platform.width();
+    this.height = this.platform.height();
+    console.log("Widht: ", this.width, "| Height: ", this.height);
+
+    this.rosProvider.showCamera(this.width, this.height, this.quality);
   }
 
   stop() {
@@ -55,9 +58,9 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.rosProvider.ros.on('close', function () {
+    /*this.rosProvider.ros.on('close', function () {
       console.log('Connection to websocket server closed.');
-    });
+    });*/
   }
 
 }

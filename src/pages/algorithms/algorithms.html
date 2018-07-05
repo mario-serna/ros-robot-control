@@ -1,0 +1,265 @@
+<!--
+  Generated template for the AlgorithmsPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+  <ion-navbar color="primary" no-border-bottom>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>
+      Algorithms
+    </ion-title>
+    <ion-buttons right>
+      <ng-container *ngIf="rosProvider.connection | async as con; else offline">
+        <ng-container *ngIf="con == 1; else offline">
+          <button ion-button icon-only [hidden]="showCamera===true" (click)="showROSCamera(); showCamera=true">
+            <ion-icon name="eye"></ion-icon>
+          </button>
+          <button ion-button icon-only [hidden]="showCamera===false" (click)="showCamera=false">
+            <ion-icon name="eye-off"></ion-icon>
+          </button>
+          <button ion-button (click)="rosProvider.showPrompt(1)">
+            <ion-icon name="cloud-done"></ion-icon>
+          </button>
+        </ng-container>
+      </ng-container>
+      <ng-template #offline>
+        <button ion-button (click)="rosProvider.showPrompt(0)">
+          <ion-icon name="cloud-outline"></ion-icon>
+        </button>
+      </ng-template>
+    </ion-buttons>
+  </ion-navbar>
+
+  <ion-toolbar color="primary" no-border-top>
+    <ion-segment color="light" [(ngModel)]="opt">
+      <ion-segment-button value="info">
+        Information
+      </ion-segment-button>
+      <ion-segment-button value="parameters">
+        Parameters
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ng-container *ngIf="rosProvider.connection | async as con; else loadingBlock">
+    <ng-container *ngIf="con == 1; else offlineWS">
+
+      <ion-toolbar color="primary" [hidden]="rosProvider.nodeState.node_state < 1">
+        <ion-buttons right>
+          <button ion-button (click)="rosProvider.callBugNodeStateSwitch(2)" [hidden]="rosProvider.nodeState.node_state < 1 || rosProvider.nodeState.node_state == 2">
+            <ion-icon name="play"></ion-icon>
+          </button>
+          <button ion-button (click)="rosProvider.callBugNodeStateSwitch(3)" [hidden]="rosProvider.nodeState.node_state < 1 || rosProvider.nodeState.node_state == 3">
+            <ion-icon name="pause"></ion-icon>
+          </button>
+          <button ion-button (click)="rosProvider.callBugNodeStateSwitch(4)" [hidden]="rosProvider.nodeState.node_state < 1">
+            <ion-icon name="square"></ion-icon>
+          </button>
+        </ion-buttons>
+      </ion-toolbar>
+
+      <ion-grid [hidden]="showCamera===false">
+        <ion-row>
+          <ion-col col-12 text-center>
+            <div id="image" #image></div>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="rosProvider.viewer && showCamera===true">
+          <ion-col col-12 text-center>
+            <ion-item>
+              <ion-label>Quality</ion-label>
+              <ion-select interface="action-sheet" [(ngModel)]="quality" (ionChange)="showROSCamera()">
+                <ion-option value="100">High (100)</ion-option>
+                <ion-option value="50">Medium (50)</ion-option>
+                <ion-option value="25">Low (25)</ion-option>
+                <ion-option value="1">Pixel (1)</ion-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <div [ngSwitch]="opt">
+        <ion-list *ngSwitchCase="'info'">
+          <ion-item-group>
+            <ion-item-divider color="light">
+              Algorithm State
+            </ion-item-divider>
+            <ion-item>
+              Node State
+              <ion-note item-end>
+                {{rosProvider.nodeState.node_state_desc}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              Bug State
+              <ion-note item-end text-wrap>
+                {{rosProvider.nodeState.bug_state_desc}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              Name
+              <ion-note item-end text-wrap>
+                {{rosProvider.algorithmState.name}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              Initial to Goal Distance
+              <ion-note item-end text-wrap>
+                {{rosProvider.algorithmState.initial_to_goal_distance | number}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              Current to Goal Distance
+              <ion-note item-end text-wrap>
+                {{rosProvider.algorithmState.current_to_goal_distance | number}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              Path Length
+              <ion-note item-end text-wrap>
+                {{rosProvider.algorithmState.path_length | number}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              Robot Pose
+              <ion-note item-end text-wrap>
+                X: {{rosProvider.algorithmState.pose_x | number}} Y: {{rosProvider.algorithmState.pose_y | number}} Yaw: {{rosProvider.algorithmState.yaw
+                |number}}
+              </ion-note>
+            </ion-item>
+            <button *ngIf="rosProvider.runInfo.length > 0" ion-item (click)="presentRunInfoModal()">
+              State Log
+              <ion-icon name="list-box" item-end></ion-icon>
+            </button>
+          </ion-item-group>
+        </ion-list>
+
+        <ion-list *ngSwitchCase="'parameters'">
+          <ng-container *ngIf="rosProvider.nodeState; else loadingBlock">
+            <ion-item-group [hidden]="rosProvider.nodeState.node_state == 0">
+              <ion-item-divider color="light">
+                Parameters
+              </ion-item-divider>
+              <ion-item>
+                <ion-label>Algorithm</ion-label>
+                <ion-select [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()" disabled>
+                  <ion-option value="0" selected="true">Bug0</ion-option>
+                  <ion-option value="1">Bug1</ion-option>
+                  <ion-option value="2">Bug2</ion-option>
+                  <ion-option value="3">DistBug</ion-option>
+                  <ion-option value="4">Intelligent-Bug</ion-option>
+                  <ion-option value="5">Intensity-Bug</ion-option>
+                  <ion-option value="6">TangetBug</ion-option>
+                  <ion-option value="7">PointBug</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label>Simulation</ion-label>
+                <ion-toggle [(ngModel)]="rosProvider.bugServiceRequest.simulation" disabled></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>Reverse Criterion</ion-label>
+                <ion-toggle [(ngModel)]="rosProvider.bugServiceRequest.reverse" disabled></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>Choose Boundary</ion-label>
+                <ion-toggle [(ngModel)]="rosProvider.bugServiceRequest.choose" disabled></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>Velocity (m/s)</ion-label>
+                <ion-note item-end text-wrap>
+                  {{rosProvider.bugServiceRequest.velocity}}
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Desired X</ion-label>
+                <ion-note item-end text-wrap>
+                  {{rosProvider.bugServiceRequest.desired_x}}
+                </ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>Desired Y</ion-label>
+                <ion-note item-end text-wrap>
+                  {{rosProvider.bugServiceRequest.desired_y}}
+                </ion-note>
+              </ion-item>
+            </ion-item-group>
+            <ion-item-group [hidden]="rosProvider.nodeState.node_state != 0">
+              <ion-item-divider color="light">
+                Parameters
+              </ion-item-divider>
+              <ion-item>
+                <ion-label>Algorithm</ion-label>
+                <ion-select [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()">
+                  <ion-option value="0" selected="true">Bug0</ion-option>
+                  <ion-option value="1">Bug1</ion-option>
+                  <ion-option value="2">Bug2</ion-option>
+                  <ion-option value="3">DistBug</ion-option>
+                  <ion-option value="4">Intelligent-Bug</ion-option>
+                  <ion-option value="5">Intensity-Bug</ion-option>
+                  <ion-option value="6">TangetBug</ion-option>
+                  <ion-option value="7">PointBug</ion-option>
+                </ion-select>
+              </ion-item>
+              <ion-item>
+                <ion-label>Simulation</ion-label>
+                <ion-toggle [(ngModel)]="rosProvider.bugServiceRequest.simulation"></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>Reverse Criterion</ion-label>
+                <ion-toggle [(ngModel)]="rosProvider.bugServiceRequest.reverse" [disabled]="disable"></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-label>Choose Boundary</ion-label>
+                <ion-toggle [(ngModel)]="rosProvider.bugServiceRequest.choose" [disabled]="disable"></ion-toggle>
+              </ion-item>
+              <ion-item>
+                <ion-range min="1" max="5" step="1" snaps [(ngModel)]="rosProvider.defaultVel" (ionChange)="rosProvider.bugServiceRequest.velocity = rosProvider.defaultVel/10">
+                  <ion-icon range-left small name="speedometer"></ion-icon>
+                  <ion-icon range-right name="speedometer"></ion-icon>
+                </ion-range>
+              </ion-item>
+              <ion-item>
+                <ion-label>Velocity (m/s)</ion-label>
+                <ion-input [(ngModel)]="rosProvider.bugServiceRequest.velocity" readonly disabled></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label>Desired X</ion-label>
+                <ion-input type="number" #i_x (keyup.enter)="moveFocus(i_y)" [(ngModel)]="rosProvider.bugServiceRequest.desired_x"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label>Desired Y</ion-label>
+                <ion-input type="number" #i_y (keyup.enter)="moveFocus(i_x)" [(ngModel)]="rosProvider.bugServiceRequest.desired_y"></ion-input>
+              </ion-item>
+            </ion-item-group>
+          </ng-container>
+        </ion-list>
+      </div>
+    </ng-container>
+
+    <ng-template #loadingBlock>
+      <h2>
+        <ion-spinner></ion-spinner>Loading</h2>
+    </ng-template>
+
+  </ng-container>
+
+  <ng-template #offlineWS>
+    <h2>Server offline</h2>
+    <p>Try connecting to the server again!</p>
+  </ng-template>
+
+  <ion-fab bottom right>
+    <button ion-fab (click)="rosProvider.callServiceInitBug()" [hidden]="rosProvider.nodeState.node_state == -1 || rosProvider.nodeState.node_state != 0">
+      <ion-icon name="play"></ion-icon>
+    </button>
+  </ion-fab>
+
+</ion-content>

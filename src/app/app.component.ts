@@ -4,6 +4,7 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
 import { HomePage } from '../pages/home/home';
+import { AlgorithmsPage } from '../pages/algorithms/algorithms';
 import { SettingsPage } from '../pages/settings/settings';
 
 @Component({
@@ -12,7 +13,7 @@ import { SettingsPage } from '../pages/settings/settings';
 export class MyApp {
   @ViewChild(Nav) nav;
 
-  rootPage: any = HomePage;
+  rootPage: any = AlgorithmsPage;
 
   pages: Array<{ title: string, component: any, icon: string, action?: string }>;
 
@@ -25,7 +26,8 @@ export class MyApp {
 
     // used for an example of ngFor and navigation
     this.pages = [
-      { title: 'Home', component: HomePage, icon: 'home' },
+      { title: 'Pioneer Control', component: HomePage, icon: 'game-controller-a' },
+      { title: 'Algorithms', component: AlgorithmsPage, icon: 'bug' },
       { title: 'Settings', component: SettingsPage, icon: 'settings' }
     ];
   }
@@ -48,7 +50,7 @@ export class MyApp {
     if (page.title === 'Settings') {
       this.nav.push(SettingsPage);
     } else {
-      // this.nav.setRoot(page.component);
+      this.nav.setRoot(page.component);
     }
   }
 }

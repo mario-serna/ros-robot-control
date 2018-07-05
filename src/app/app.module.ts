@@ -10,8 +10,10 @@ import { SQLitePorter } from '@ionic-native/sqlite-porter';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
+import { AlgorithmsPage } from '../pages/algorithms/algorithms';
 import { SettingsPage } from '../pages/settings/settings';
-import { TopicsPage } from '../pages/topics/topics';
+import { RunInfoModalPage } from '../pages/run-info-modal/run-info-modal';
+
 import { DatabaseProvider } from '../providers/database/database';
 import { RosProvider } from '../providers/ros/ros';
 import { DirectivesModule } from '../directives/directives.module';
@@ -20,21 +22,27 @@ import { DirectivesModule } from '../directives/directives.module';
   declarations: [
     MyApp,
     HomePage,
+    AlgorithmsPage,
     SettingsPage,
-    TopicsPage
+    RunInfoModalPage
   ],
   imports: [
     BrowserModule,
     HttpModule,
     DirectivesModule,
     IonicStorageModule.forRoot(),
-    IonicModule.forRoot(MyApp)
+    IonicModule.forRoot(MyApp,{
+      scrollPadding: false,
+      scrollAssist: true
+    })
   ],
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
     HomePage,
-    SettingsPage
+    AlgorithmsPage,
+    SettingsPage,
+    RunInfoModalPage
   ],
   providers: [
     StatusBar,

@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-navbar>
+  <ion-navbar color="primary">
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
@@ -7,16 +7,18 @@
       Pioneer Control
     </ion-title>
     <ion-buttons right>
-      <ng-container *ngIf="rosProvider.connection | async; else offline">
-        <button ion-button icon-only [hidden]="showCamera===true" (click)="showROSCamera(); showCamera=true">
-          <ion-icon name="eye"></ion-icon>
-        </button>
-        <button ion-button icon-only [hidden]="showCamera===false" (click)="showCamera=false">
-          <ion-icon name="eye-off"></ion-icon>
-        </button>
-        <button ion-button (click)="rosProvider.showPrompt(1)">
-          <ion-icon name="cloud-done"></ion-icon>
-        </button>
+      <ng-container *ngIf="rosProvider.connection | async as con; else offline">
+        <ng-container *ngIf="con == 1; else offline">
+          <button ion-button icon-only [hidden]="showCamera===true" (click)="showROSCamera(); showCamera=true">
+            <ion-icon name="eye"></ion-icon>
+          </button>
+          <button ion-button icon-only [hidden]="showCamera===false" (click)="showCamera=false">
+            <ion-icon name="eye-off"></ion-icon>
+          </button>
+          <button ion-button (click)="rosProvider.showPrompt(1)">
+            <ion-icon name="cloud-done"></ion-icon>
+          </button>
+        </ng-container>
       </ng-container>
       <ng-template #offline>
         <button ion-button (click)="rosProvider.showPrompt(0)">
@@ -28,90 +30,109 @@
 </ion-header>
 
 <ion-content>
-  <ng-container *ngIf="rosProvider.connection | async; else offlineWS">
-    <ion-grid>
-      <ion-row>
-        <ion-col col-12 text-center>
-          <div id="image" [hidden]="showCamera===false"></div>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col col-12>
-          <button ion-button icon-only round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.forward()"
-            (onPressStart)="rosProvider.forward()" (onPressing)="rosProvider.forward()" (onPressEnd)="rosProvider.stop()">
-            <ion-icon name="arrow-up"></ion-icon>
-          </button>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col col-4>
-          <button ion-button icon-only round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.left()" (onPressStart)="rosProvider.left()"
-            (onPressing)="rosProvider.left()" (onPressEnd)="rosProvider.stop()">
-            <ion-icon name="arrow-back"></ion-icon>
-          </button>
-        </ion-col>
-        <ion-col col-4>
-          <button ion-button icon-only round block (click)="stop()">
-            <ion-icon name="pause"></ion-icon>
-          </button>
-        </ion-col>
-        <ion-col col-4>
-          <button ion-button icon-only round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.right()" (onPressStart)="rosProvider.right()"
-            (onPressing)="rosProvider.right()" (onPressEnd)="rosProvider.stop()">
-            <ion-icon name="arrow-forward"></ion-icon>
-          </button>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col col-12>
-          <button ion-button icon-only round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.backward()"
-            (onPressStart)="rosProvider.backward()" (onPressing)="rosProvider.backward()" (onPressEnd)="rosProvider.stop()"
-            (onStop)="stop($event)">
-            <ion-icon name="arrow-down"></ion-icon>
-          </button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+  <ng-container *ngIf="rosProvider.connection | async as con; else loadingBlock">
+    <ng-container *ngIf="con == 1; else offlineWS">
+      <ion-grid>
+        <ion-row [hidden]="showCamera===false">
+          <ion-col col-12 text-center>
+            <div id="image" #image></div>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="rosProvider.viewer && showCamera===true">
+          <ion-col col-12 text-center>
+            <ion-item>
+              <ion-label>Quality</ion-label>
+              <ion-select interface="action-sheet" [(ngModel)]="quality" (ionChange)="showROSCamera()">
+                <ion-option value="100">High (100)</ion-option>
+                <ion-option value="50">Medium (50)</ion-option>
+                <ion-option value="25">Low (25)</ion-option>
+                <ion-option value="1">Pixel (1)</ion-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-12>
+            <button ion-button icon-only outline round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.forward()"
+              (onPressStart)="rosProvider.forward()" (onPressing)="rosProvider.forward()" (onPressEnd)="rosProvider.stop()">
+              <ion-icon name="arrow-up"></ion-icon>
+            </button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-4>
+            <button ion-button icon-only outline round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.left()"
+              (onPressStart)="rosProvider.left()" (onPressing)="rosProvider.left()" (onPressEnd)="rosProvider.stop()">
+              <ion-icon name="arrow-back"></ion-icon>
+            </button>
+          </ion-col>
+          <ion-col col-4>
+            <button ion-button icon-only outline round block (click)="stop()">
+              <ion-icon name="pause"></ion-icon>
+            </button>
+          </ion-col>
+          <ion-col col-4>
+            <button ion-button icon-only outline round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.right()"
+              (onPressStart)="rosProvider.right()" (onPressing)="rosProvider.right()" (onPressEnd)="rosProvider.stop()">
+              <ion-icon name="arrow-forward"></ion-icon>
+            </button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-12>
+            <button ion-button icon-only outline round block ion-long-press [stop]="isStop" [interval]="400" (click)="rosProvider.backward()"
+              (onPressStart)="rosProvider.backward()" (onPressing)="rosProvider.backward()" (onPressEnd)="rosProvider.stop()"
+              (onStop)="stop($event)">
+              <ion-icon name="arrow-down"></ion-icon>
+            </button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
 
-    <ion-list>
-      <ng-container *ngIf="rosProvider.rosWS_Topic_Vel">
+      <ion-list>
+        <ng-container *ngIf="rosProvider.rosWS_Topic_Vel">
+          <ion-item>
+            <ion-label>Target</ion-label>
+            <ion-select [(ngModel)]="rosProvider.rosWS_Topic_Vel.optValue" (ionChange)="rosProvider.rosWSTopicInit()">
+              <ion-option value="/RosAria/cmd_vel">RosAria</ion-option>
+              <ion-option value="/cmd_vel">cmd_vel</ion-option>
+            </ion-select>
+          </ion-item>
+        </ng-container>
+
         <ion-item>
-          <ion-label>Target</ion-label>
-          <ion-select [(ngModel)]="rosProvider.rosWS_Topic_Vel.optValue" (ionChange)="rosProvider.rosWSTopicInit()">
-            <ion-option value="/RosAria/cmd_vel">RosAria</ion-option>
-            <ion-option value="/cmd_vel">cmd_vel</ion-option>
-          </ion-select>
+          <ion-range min="1" max="5" step="1" snaps [(ngModel)]="rosProvider.defaultVel" (ionChange)="rosProvider.vel = rosProvider.defaultVel/10">
+            <ion-icon range-left small name="speedometer"></ion-icon>
+            <ion-icon range-right name="speedometer"></ion-icon>
+          </ion-range>
         </ion-item>
-      </ng-container>
 
-      <ion-item>
-        <ion-range min="1" max="5" step="1" snaps [(ngModel)]="rosProvider.maxVel" (ionChange)="rosProvider.vel = rosProvider.maxVel/10">
-          <ion-icon range-left small name="speedometer"></ion-icon>
-          <ion-icon range-right name="speedometer"></ion-icon>
-        </ion-range>
-      </ion-item>
+        <ion-item>
+          <ion-label>Velocity (m/s)</ion-label>
+          <ion-input [(ngModel)]="rosProvider.vel" readonly disabled></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label stacked>Velocity (m/s)</ion-label>
-        <ion-input [(ngModel)]="rosProvider.vel" readonly></ion-input>
-      </ion-item>
+      </ion-list>
 
-    </ion-list>
+      <ion-card *ngIf="rosProvider.rosWS_Topic_Vel">
 
-    <ion-card *ngIf="rosProvider.rosWS_Topic_Vel">
+        <ion-card-header>
+          Publishing to {{rosProvider.rosWS_Topic_Vel.optValue}}
+        </ion-card-header>
 
-      <ion-card-header>
-        Publishing to {{rosProvider.rosWS_Topic_Vel.optValue}}
-      </ion-card-header>
+        <ion-card-content>
+          <p>Linear: {{rosProvider.twist.linear | json}}</p>
+          <p>Angular: {{rosProvider.twist.angular | json}}</p>
+        </ion-card-content>
 
-      <ion-card-content>
-        <p>Linear: {{rosProvider.twist.linear | json}}</p>
-        <p>Angular: {{rosProvider.twist.angular | json}}</p>
-      </ion-card-content>
-
-    </ion-card>
-
+      </ion-card>
+    </ng-container>
   </ng-container>
+
+  <ng-template #loadingBlock>
+    <h2>
+      <ion-spinner></ion-spinner>Loading</h2>
+  </ng-template>
 
   <ng-template #offlineWS>
     <h2>Server offline</h2>
