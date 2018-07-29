@@ -24,6 +24,7 @@ interface algorithmStateType {
   yaw: number;
   initial_to_goal_distance: number;
   current_to_goal_distance: number;
+  best_distance: number;
   path_length: number;
 };
 
@@ -107,6 +108,7 @@ export class RosProvider {
       yaw: 0,
       initial_to_goal_distance: 0,
       current_to_goal_distance: 0,
+      best_distance: 0,
       path_length: 0
     }
     this.presentLoadingInit();

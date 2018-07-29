@@ -3,7 +3,7 @@
     <name>pioneerControlerApp</name>
     <description>An awesome Ionic/Cordova app.</description>
     <author email="hi@ionicframework" href="http://ionicframework.com/">Ionic Framework Team</author>
-    <content original-src="index.html" src="http://192.168.0.14:8100" />
+    <content original-src="index.html" src="http://192.168.0.104:8100" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -95,5 +95,9 @@
     <allow-navigation href="http://172.31.13.183:8100" />
     <allow-navigation href="http://172.31.13.93:8100" />
     <allow-navigation href="http://172.31.5.97:8100" />
+    <allow-navigation href="http://192.168.0.103:8100" />
+    <allow-navigation href="http://192.168.1.71:8100" />
+    <allow-navigation href="http://192.168.1.67:8100" />
+    <allow-navigation href="http://192.168.0.104:8100" />
     <engine name="android" spec="7.0.0" />
 </widget>

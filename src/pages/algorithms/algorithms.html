@@ -91,6 +91,10 @@
             <ion-item-divider color="light">
               Algorithm State
             </ion-item-divider>
+            <button *ngIf="rosProvider.runInfo.length > 0" ion-item (click)="presentRunInfoModal()">
+              State Log
+              <ion-icon name="list-box" item-end></ion-icon>
+            </button>
             <ion-item>
               Node State
               <ion-note item-end>
@@ -122,6 +126,12 @@
               </ion-note>
             </ion-item>
             <ion-item>
+              Best Distance
+              <ion-note item-end text-wrap>
+                {{rosProvider.algorithmState.best_distance | number}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
               Path Length
               <ion-note item-end text-wrap>
                 {{rosProvider.algorithmState.path_length | number}}
@@ -134,10 +144,6 @@
                 |number}}
               </ion-note>
             </ion-item>
-            <button *ngIf="rosProvider.runInfo.length > 0" ion-item (click)="presentRunInfoModal()">
-              State Log
-              <ion-icon name="list-box" item-end></ion-icon>
-            </button>
           </ion-item-group>
         </ion-list>
 
@@ -149,7 +155,7 @@
               </ion-item-divider>
               <ion-item>
                 <ion-label>Algorithm</ion-label>
-                <ion-select [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()" disabled>
+                <ion-select interface="action-sheet" [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()" disabled>
                   <ion-option value="0" selected="true">Bug0</ion-option>
                   <ion-option value="1">Bug1</ion-option>
                   <ion-option value="2">Bug2</ion-option>
@@ -197,7 +203,7 @@
               </ion-item-divider>
               <ion-item>
                 <ion-label>Algorithm</ion-label>
-                <ion-select [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()">
+                <ion-select interface="action-sheet" [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()">
                   <ion-option value="0" selected="true">Bug0</ion-option>
                   <ion-option value="1">Bug1</ion-option>
                   <ion-option value="2">Bug2</ion-option>
