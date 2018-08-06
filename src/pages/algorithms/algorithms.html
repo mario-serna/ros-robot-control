@@ -15,6 +15,12 @@
     <ion-buttons right>
       <ng-container *ngIf="rosProvider.connection | async as con; else offline">
         <ng-container *ngIf="con == 1; else offline">
+          <button ion-button icon-only [hidden]="showMarker===true" (click)="showROSMarkers(); showMarker=true">
+            <ion-icon name="pin"></ion-icon>
+          </button>
+          <button ion-button icon-only [hidden]="showMarker===false" (click)="rosProvider.hideMarkers(); showMarker=false">
+            <ion-icon name="close"></ion-icon>
+          </button>
           <button ion-button icon-only [hidden]="showCamera===true" (click)="showROSCamera(); showCamera=true">
             <ion-icon name="eye"></ion-icon>
           </button>
@@ -79,6 +85,25 @@
                 <ion-option value="50">Medium (50)</ion-option>
                 <ion-option value="25">Low (25)</ion-option>
                 <ion-option value="1">Pixel (1)</ion-option>
+              </ion-select>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-grid [hidden]="showMarker===false">
+        <ion-row>
+          <ion-col col-12 text-center>
+            <div id="markers" #markers></div>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="rosProvider.marker_viewer && showMarker===true">
+          <ion-col col-12 text-center>
+            <ion-item>
+              <ion-label>Fixed Frame</ion-label>
+              <ion-select interface="action-sheet" [(ngModel)]="fixed_frame" (ionChange)="showROSMarkers()">
+                <ion-option value="odom">Odom</ion-option>
+                <ion-option value="RosAria/pose">RosAria/pose</ion-option>
               </ion-select>
             </ion-item>
           </ion-col>
@@ -263,7 +288,7 @@
   </ng-template>
 
   <ion-fab bottom right>
-    <button ion-fab (click)="rosProvider.callServiceInitBug()" [hidden]="rosProvider.nodeState.node_state == -1 || rosProvider.nodeState.node_state != 0">
+    <button ion-fab (click)="rosProvider.callServiceInitBug(); opt = 'info'" [hidden]="rosProvider.nodeState.node_state == -1 || rosProvider.nodeState.node_state != 0">
       <ion-icon name="play"></ion-icon>
     </button>
   </ion-fab>

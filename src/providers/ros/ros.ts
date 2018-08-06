@@ -1,11 +1,11 @@
 import { Http } from '@angular/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { AsyncSubject } from 'rxjs/AsyncSubject';
 import { AlertController, LoadingController, ToastController } from 'ionic-angular';
 import { DatabaseProvider } from '../database/database';
 
 declare var ROSLIB: any;
-// declare var ROS2D: any;
+declare var ROS3D: any;
 declare var MJPEGCANVAS: any;
 
 interface nodeStateType {
@@ -39,6 +39,13 @@ export class RosProvider {
 
   ros: any;
   viewer: any;
+
+  // Marker visualization
+  marker_viewer: any;
+  tfClient: any;
+  markerClient: any;
+  laserScanClient: any;
+
   camera: any;
   cmdVel: any;
   twist: any;
@@ -73,7 +80,8 @@ export class RosProvider {
   rosWS_Topic_Sensor;
   rosWS_Topic_Odom;
 
-  public connection: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  //public connection: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  public connection: AsyncSubject<number> = new AsyncSubject<number>();
 
   // This variable avoids showing the prompAlert twice
   isFirstTime: boolean;
@@ -90,6 +98,7 @@ export class RosProvider {
     public database: DatabaseProvider
   ) {
     this.viewer = undefined;
+    this.marker_viewer = undefined;
     this.runInfo = [];
     this.isFirstTime = true;
     this.count = 0;
@@ -117,26 +126,30 @@ export class RosProvider {
   rosWSInit() {
     console.log('Ros init');
     this.viewer = undefined;
+    this.marker_viewer = undefined;
 
     this.ros = new ROSLIB.Ros({
       url: `ws://${this.rosWS_URL.optValue}:${this.rosWS_Port.optValue}`
     });
 
     this.ros.on('connection', () => {
+      console.log('Connected to websocket server.');
       this.count = 0;
       this.connection.next(1);
-      console.log('Connected to websocket server.');
+      this.connection.complete();
       this.dismissLoadingConnect();
     });
 
     this.ros.on('error', (error) => {
-      this.connection.next(-1);
       console.log('Error connecting to websocket server: ', JSON.stringify(error));
+      this.connection.next(-1);
+      this.connection.complete();
       this.dismissLoadingConnect();
     });
   }
 
   rosWSTopicInit() {
+    console.log("Init WS topics")
     this.nodeStateSub = new ROSLIB.Topic({
       ros: this.ros,
       name: '/bugServer/bugNodeState',
@@ -169,7 +182,7 @@ export class RosProvider {
 
     this.algorithmStateSub.subscribe((message: algorithmStateType) => {
       this.algorithmState = message;
-      console.log(JSON.stringify(message));
+      //console.log(JSON.stringify(message));
     });
 
     this.cmdVel = new ROSLIB.Topic({
@@ -201,6 +214,16 @@ export class RosProvider {
       console.log('ROS WS Disconnecting...');
       this.ros.close();
     }
+
+    this.connection = new AsyncSubject();
+
+    this.connection.subscribe(con => {
+      if (con == 1) {
+        this.rosWSTopicInit();
+        console.log("Initializing topics");
+      }
+    });
+
     this.database.getSettings().then(data => {
       this.rosWS_URL = data[0];
       this.rosWS_Port = data[1];
@@ -211,22 +234,12 @@ export class RosProvider {
 
       this.presentLoadingConnect();
       this.rosWSInit();
+    });
+  }
 
-      this.connection.asObservable().subscribe(con => {
-        if (con) {
-          this.rosWSTopicInit();
-        } /*else {
-          // This statement prevents that the alert prompt for connecting to the ros server
-          // shows itself twice
-          console.log(this.count);
-          if (!this.isFirstTime && this.count == 1) {
-            this.showPrompt(0);
-          } else {
-            this.isFirstTime = false;
-            this.count = 1;
-          }
-        }*/
-      });
+  shutdown() {
+    this.ros.on('close', function () {
+      console.log('Connection to websocket server closed.');
     });
   }
 
@@ -382,8 +395,8 @@ export class RosProvider {
     // These operations keep the image size ratio
     if (width > height) {
       let temp = width;
-      width = height+25;
-      height = temp-25;
+      width = height + 25;
+      height = temp - 25;
     }
 
     height = ((width - 32) * 480) / 640;
@@ -416,6 +429,91 @@ export class RosProvider {
       this.viewer.quality = quality;
       this.viewer.changeStream(this.rosWS_Topic_Cam.optValue);
     }
+  }
+
+  showMarkers(width, height, fixedFrame = "odom") {
+    // These operations keep the image size ratio
+    if (width > height) {
+      let temp = width;
+      width = height + 25;
+      height = temp - 25;
+    }
+
+    console.log(fixedFrame);
+
+    height = ((width - 32) * 480) / 640;
+    width = width - 32;
+
+    if (this.marker_viewer === undefined) {
+      // Create the main viewer.
+      // Set directionalLight in the ros3d.min.js from top to down
+      // directionalLight.position.set(0,0,1)
+      // Change THREE.LineBasicMaterial({size:c.scale.x}) to THREE.LineBasicMaterial()
+      // Size is not a property of THREE.LineBasicMaterial
+      this.marker_viewer = new ROS3D.Viewer({
+        divID: 'markers',
+        width: width,
+        height: height,
+        background: '#ffffff',
+        intensity: 1.0,
+        cameraPose: { x: 0, y: 0, z: 20},
+        cameraZoomSpeed: 1,
+        antialias: true
+      });
+    } else {
+      // Remove canvas and create a new one
+      let elem = document.getElementById("markers");
+      elem.removeChild(elem.childNodes[0]);
+      // Create the main viewer.
+      this.marker_viewer = new ROS3D.Viewer({
+        divID: 'markers',
+        width: width,
+        height: height,
+        background: '#ffffff',
+        intensity: 1.0,
+        cameraPose: { x: 0, y: 0, z: 20},
+        cameraZoomSpeed: 1,
+        antialias: true
+      });
+    }
+
+    // Add a simple grid
+    this.marker_viewer.addObject(new ROS3D.Grid({num_cells: 20}));
+
+    // Setup a client to listen to TFs.
+    this.tfClient = new ROSLIB.TFClient({
+      ros: this.ros,
+      angularThres: 0.01,
+      transThres: 0.01,
+      rate: 10.0,
+      fixedFrame: `/${fixedFrame}`
+    });
+
+    // Setup the marker client.
+    this.markerClient = new ROS3D.MarkerClient({
+      ros: this.ros,
+      tfClient: this.tfClient,
+      topic: '/visualization_marker',
+      rootObject: this.marker_viewer.scene
+    });
+
+    // Setup the marker client.
+    this.laserScanClient = new ROS3D.LaserScan({
+      ros: this.ros,
+      tfClient: this.tfClient,
+      topic: '/p3dx/laser/scan',
+      material : { color: '#000000', size: 0.2},
+      rootObject: this.marker_viewer.scene
+    });
+  }
+
+  hideMarkers() {
+    console.log("Turning off markers");
+    let elem = document.getElementById("markers");
+    elem.removeChild(elem.childNodes[0]);
+    //this.marker_viewer = undefined;
+    //this.tfClient = undefined;
+    //this.markerClient = undefined;
   }
 
   showPrompt(status: number) {
@@ -460,12 +558,7 @@ export class RosProvider {
             this.database.setROSWSSetting(this.rosWS_URL.id, this.rosWS_URL.optValue);
             this.database.setROSWSSetting(this.rosWS_Port.id, this.rosWS_Port.optValue);
             // console.log(JSON.stringify(data));
-            this.presentLoadingConnect();
-            if (this.ros) {
-              console.log('ROS WS Disconnecting...');
-              this.ros.close();
-            }
-            this.rosWSInit();
+            this.loadSettings();
           }
         }
       ]
@@ -494,10 +587,16 @@ export class RosProvider {
       this.loadingInit = null;
     }
 
-    this.dismissLoadingConnect();
+    //this.dismissLoadingConnect();
 
     this.loadingConnect = this.loadingCtrl.create({
-      content: `Trying to connect to ${this.rosWS_URL.optValue}:${this.rosWS_Port.optValue}`
+      content: `Trying to connect to ${this.rosWS_URL.optValue}:${this.rosWS_Port.optValue}`,
+      enableBackdropDismiss: true
+    });
+
+    this.loadingConnect.onDidDismiss(() => {
+      console.log("Loading Connection dismissed");
+      this.loadingConnect = null;
     });
 
     this.loadingConnect.present();

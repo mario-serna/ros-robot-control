@@ -20,6 +20,7 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
   @ViewChild("image") inputChild: ElementRef;
 
   showCamera = false;
+  showMarker = false;
   isStop: boolean;
   disable: boolean;
   isActive: boolean;
@@ -30,6 +31,7 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
   width;
   height;
   quality;
+  fixed_frame;
 
   constructor(
     public platform: Platform,
@@ -41,6 +43,7 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
     public rosProvider: RosProvider
   ) {
     this.quality = 25;
+    this.fixed_frame = "odom";
     this.opt = "info";
     this.isStop = false;
     this.isActive = false;
@@ -74,6 +77,10 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
       this.disable = true;
       this.rosProvider.bugServiceRequest.reverse = false;
       this.rosProvider.bugServiceRequest.choose = false;
+    } else if (this.rosProvider.bugServiceRequest.algorithm == 6) {
+      this.disable = true;
+      this.rosProvider.bugServiceRequest.reverse = false;
+      this.rosProvider.bugServiceRequest.choose = true;
     } else {
       this.disable = false;
     }
@@ -91,10 +98,16 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
     this.rosProvider.showCamera(this.width, this.height, this.quality);
   }
 
+  showROSMarkers() {
+    this.width = this.platform.width();
+    this.height = this.platform.height();
+    console.log("Widht: ", this.width, "| Height: ", this.height);
+
+    this.rosProvider.showMarkers(this.width, this.height, this.fixed_frame);
+  }
+
   ngOnDestroy() {
-    /*this.rosProvider.ros.on('close', function () {
-      console.log('Connection to websocket server closed.');
-    });*/
+    this.rosProvider.shutdown();
   }
 
 }
