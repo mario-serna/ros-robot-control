@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
-import { Platform, NavController, AlertController, LoadingController, ModalController } from 'ionic-angular';
+import { Platform, NavController, AlertController, LoadingController, ModalController, Select } from 'ionic-angular';
 import { DatabaseProvider } from '../../providers/database/database';
 import { RosProvider } from '../../providers/ros/ros';
 import { RunInfoModalPage } from './../run-info-modal/run-info-modal';
@@ -18,6 +18,9 @@ import { RunInfoModalPage } from './../run-info-modal/run-info-modal';
 export class AlgorithmsPage implements OnInit, OnDestroy {
 
   @ViewChild("image") inputChild: ElementRef;
+  @ViewChild("selectFrame") selectFrameRef: Select;
+  @ViewChild("selectNamespace") selectNamespaceRef: Select;
+  @ViewChild("selectLaser") selectLaserRef: Select;
 
   showCamera = false;
   showMarker = false;
@@ -32,6 +35,8 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
   height;
   quality;
   fixed_frame;
+  namespace;
+  isLaserOn;
 
   constructor(
     public platform: Platform,
@@ -73,7 +78,7 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
 
   checkOpt() {
     console.log("Changed!")
-    if (this.rosProvider.bugServiceRequest.algorithm == 1) {
+    if (this.rosProvider.bugServiceRequest.algorithm == 1 || this.rosProvider.bugServiceRequest.algorithm == 5) {
       this.disable = true;
       this.rosProvider.bugServiceRequest.reverse = false;
       this.rosProvider.bugServiceRequest.choose = false;
@@ -104,6 +109,18 @@ export class AlgorithmsPage implements OnInit, OnDestroy {
     console.log("Widht: ", this.width, "| Height: ", this.height);
 
     this.rosProvider.showMarkers(this.width, this.height, this.fixed_frame);
+  }
+
+  openSelectFrame(){
+    this.selectFrameRef.open();
+  }
+
+  openSelectNamespace(){
+    this.selectNamespaceRef.open();
+  }
+
+  openSelectLaser(){
+    this.selectLaserRef.open();
   }
 
   ngOnDestroy() {

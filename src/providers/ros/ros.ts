@@ -169,7 +169,8 @@ export class RosProvider {
 
       if (len == 0) {
         this.runInfo = [];
-        this.runInfo.push(message);
+        if(message.node_state > 0)
+          this.runInfo.push(message);
       } else {
         let bugState = this.runInfo[len - 1].bug_state;
         let nodeState = this.runInfo[len - 1].node_state;
@@ -450,35 +451,24 @@ export class RosProvider {
       // directionalLight.position.set(0,0,1)
       // Change THREE.LineBasicMaterial({size:c.scale.x}) to THREE.LineBasicMaterial()
       // Size is not a property of THREE.LineBasicMaterial
+      // Remove useScreenCoordinates in new THREE$1.SpriteMaterial({
+      //map: texture,
+      // NOTE: This is needed for THREE.js r61, unused in r70
+      //useScreenCoordinates: false });
       this.marker_viewer = new ROS3D.Viewer({
         divID: 'markers',
         width: width,
         height: height,
         background: '#ffffff',
         intensity: 1.0,
-        cameraPose: { x: 0, y: 0, z: 20},
-        cameraZoomSpeed: 1,
-        antialias: true
-      });
-    } else {
-      // Remove canvas and create a new one
-      let elem = document.getElementById("markers");
-      elem.removeChild(elem.childNodes[0]);
-      // Create the main viewer.
-      this.marker_viewer = new ROS3D.Viewer({
-        divID: 'markers',
-        width: width,
-        height: height,
-        background: '#ffffff',
-        intensity: 1.0,
-        cameraPose: { x: 0, y: 0, z: 20},
+        cameraPose: { x: 0, y: 0, z: 20 },
         cameraZoomSpeed: 1,
         antialias: true
       });
     }
 
     // Add a simple grid
-    this.marker_viewer.addObject(new ROS3D.Grid({num_cells: 20}));
+    this.marker_viewer.addObject(new ROS3D.Grid({ num_cells: 20 }));
 
     // Setup a client to listen to TFs.
     this.tfClient = new ROSLIB.TFClient({
@@ -496,24 +486,57 @@ export class RosProvider {
       topic: '/visualization_marker',
       rootObject: this.marker_viewer.scene
     });
-
-    // Setup the marker client.
-    this.laserScanClient = new ROS3D.LaserScan({
-      ros: this.ros,
-      tfClient: this.tfClient,
-      topic: '/p3dx/laser/scan',
-      material : { color: '#000000', size: 0.2},
-      rootObject: this.marker_viewer.scene
-    });
   }
 
   hideMarkers() {
     console.log("Turning off markers");
+    this.markerClient.unsubscribe();
+    if (this.laserScanClient)
+      this.laserScanClient.unsubscribe();
+
     let elem = document.getElementById("markers");
-    elem.removeChild(elem.childNodes[0]);
-    //this.marker_viewer = undefined;
-    //this.tfClient = undefined;
-    //this.markerClient = undefined;
+    if (elem.childNodes.length > 0) {
+      console.log("Removing canvas: ", elem.childNodes.length);
+      elem.removeChild(elem.childNodes[0]);
+    }
+    this.marker_viewer = undefined;
+  }
+
+  changeNamespace(ns: string) {
+    if (this.markerClient) {
+      console.log("Changing namespace to ", ns);
+      this.markerClient.namespace = ns;
+    }
+
+  }
+
+  setLaserClientSubscribe(val: number) {
+    if (this.laserScanClient) {
+      if (val == 0) {
+        console.log("Laser unsubscribe : ", this.marker_viewer.scene.children.length);
+        //this.marker_viewer.scene.remove.apply(this.marker_viewer.scene, this.marker_viewer.scene.children);
+        this.laserScanClient.unsubscribe();
+        this.laserScanClient = undefined;
+      } else if (val == 1) {
+        console.log("Laser subscribe");
+        this.laserScanClient.subscribe();
+      }
+    } else {
+      let sim = Number(this.bugServiceRequest.simulation) == 1 ? true : false;
+      let topic = sim ? '/p3dx/laser/scan' : '/scan';
+
+      // Setup the marker client.
+      this.laserScanClient = new ROS3D.LaserScan({
+        ros: this.ros,
+        tfClient: this.tfClient,
+        topic: topic,
+        material: { color: '#000000', size: 0.2 },
+        pointRatio: 10,
+        messageRatio: 3,
+        rootObject: this.marker_viewer.scene
+      });
+    }
+
   }
 
   showPrompt(status: number) {

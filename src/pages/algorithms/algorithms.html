@@ -98,14 +98,48 @@
           </ion-col>
         </ion-row>
         <ion-row *ngIf="rosProvider.marker_viewer && showMarker===true">
-          <ion-col col-12 text-center>
-            <ion-item>
+          <ion-col col-4>
+            <ion-item [hidden]="true">
               <ion-label>Fixed Frame</ion-label>
-              <ion-select interface="action-sheet" [(ngModel)]="fixed_frame" (ionChange)="showROSMarkers()">
+              <ion-select interface="action-sheet" [(ngModel)]="fixed_frame" (ionChange)="showROSMarkers()" #selectFrame>
                 <ion-option value="odom">Odom</ion-option>
                 <ion-option value="RosAria/pose">RosAria/pose</ion-option>
               </ion-select>
             </ion-item>
+            <button ion-button outline block small (click)="openSelectFrame()">
+              Frame
+            </button>
+          </ion-col>
+          <ion-col col-4>
+            <ion-item [hidden]="true">
+              <ion-label>Namespace</ion-label>
+              <ion-select interface="action-sheet" [(ngModel)]="namespace" (ionChange)="rosProvider.changeNamespace(namespace)" #selectNamespace>
+                <ion-option value="" selected="true">All</ion-option>
+                <ion-option value="bug0">Bug0</ion-option>
+                <ion-option value="bug1">Bug1</ion-option>
+                <ion-option value="bug2">Bug2</ion-option>
+                <ion-option value="distBug">DistBug</ion-option>
+                <ion-option value="intellligentBug">Intelligent-Bug</ion-option>
+                <ion-option value="iBug">Intensity-Bug</ion-option>
+                <ion-option value="tangetBug">TangetBug</ion-option>
+                <ion-option value="pointBug">PointBug</ion-option>
+              </ion-select>
+            </ion-item>
+            <button ion-button outline block small (click)="openSelectNamespace()">
+              Namespace
+            </button>
+          </ion-col>
+          <ion-col col-4>
+            <ion-item [hidden]="true">
+              <ion-label>Namespace</ion-label>
+              <ion-select interface="action-sheet" [(ngModel)]="isLaserOn" (ionChange)="rosProvider.setLaserClientSubscribe(isLaserOn)" #selectLaser>
+                <ion-option value="0" selected="true">Off</ion-option>
+                <ion-option value="1">On</ion-option>
+              </ion-select>
+            </ion-item>
+            <button ion-button outline block small (click)="openSelectLaser()">
+              Laser
+            </button>
           </ion-col>
         </ion-row>
       </ion-grid>
