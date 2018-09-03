@@ -20,11 +20,21 @@
 
 
 <ion-content padding>
+  <!-- <div class="row">
+    <div class="col-md-6">
+      <div style="display: block;">
+        <canvas baseChart width="300" height="400" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
+          [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
+          (chartClick)="chartClicked($event)"></canvas>
+      </div>
+    </div>
+  </div> -->
   <ion-list>
-    <ion-item *ngFor="let item of data" text-wrap>    
+    <ion-item *ngFor="let item of data; let i = index" text-wrap>
       <!-- <ion-icon [name]="stateIcon[item.node_state]" item-start></ion-icon> -->
       <h2>{{item.bug_state_desc}}</h2>
       <h3>{{item.node_state_desc}}</h3>
+      <h3>Start time: {{item.node_state_time | number}}s</h3>
     </ion-item>
   </ion-list>
 </ion-content>

@@ -53,6 +53,10 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher (ionRefresh)="rosProvider.doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ng-container *ngIf="rosProvider.connection | async as con; else loadingBlock">
     <ng-container *ngIf="con == 1; else offlineWS">
 
@@ -132,7 +136,8 @@
           <ion-col col-4>
             <ion-item [hidden]="true">
               <ion-label>Namespace</ion-label>
-              <ion-select interface="action-sheet" [(ngModel)]="isLaserOn" (ionChange)="rosProvider.setLaserClientSubscribe(isLaserOn)" #selectLaser>
+              <ion-select interface="action-sheet" [(ngModel)]="isLaserOn" (ionChange)="rosProvider.setLaserClientSubscribe(isLaserOn)"
+                #selectLaser>
                 <ion-option value="0" selected="true">Off</ion-option>
                 <ion-option value="1">On</ion-option>
               </ion-select>
@@ -173,6 +178,18 @@
               </ion-note>
             </ion-item>
             <ion-item>
+              Time
+              <ion-note item-end text-wrap>
+                {{rosProvider.algorithmState.time | number}}s
+              </ion-note>
+            </ion-item>
+            <ion-item>
+              Path Length
+              <ion-note item-end text-wrap>
+                {{rosProvider.algorithmState.path_length | number}}
+              </ion-note>
+            </ion-item>
+            <ion-item>
               Initial to Goal Distance
               <ion-note item-end text-wrap>
                 {{rosProvider.algorithmState.initial_to_goal_distance | number}}
@@ -188,12 +205,6 @@
               Best Distance
               <ion-note item-end text-wrap>
                 {{rosProvider.algorithmState.best_distance | number}}
-              </ion-note>
-            </ion-item>
-            <ion-item>
-              Path Length
-              <ion-note item-end text-wrap>
-                {{rosProvider.algorithmState.path_length | number}}
               </ion-note>
             </ion-item>
             <ion-item>

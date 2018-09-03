@@ -7,6 +7,7 @@ import { HttpModule } from '@angular/http';
 import { IonicStorageModule } from '@ionic/storage';
 import { SQLite } from '@ionic-native/sqlite';
 import { SQLitePorter } from '@ionic-native/sqlite-porter';
+import { ChartsModule } from 'ng2-charts';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -34,7 +35,8 @@ import { DirectivesModule } from '../directives/directives.module';
     IonicModule.forRoot(MyApp,{
       scrollPadding: false,
       scrollAssist: true
-    })
+    }),
+    ChartsModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [

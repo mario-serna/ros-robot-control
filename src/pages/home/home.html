@@ -30,6 +30,10 @@
 </ion-header>
 
 <ion-content>
+  <ion-refresher (ionRefresh)="rosProvider.doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ng-container *ngIf="rosProvider.connection | async as con; else loadingBlock">
     <ng-container *ngIf="con == 1; else offlineWS">
       <ion-grid>

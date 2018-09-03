@@ -11,9 +11,11 @@ declare var MJPEGCANVAS: any;
 interface nodeStateType {
   node_state_desc: string;
   node_state: number;
+  node_state_time: number;
   bug_state_desc: string;
   algorithm: number;
   bug_state: number;
+  bug_state_time: number;
 };
 
 interface algorithmStateType {
@@ -26,6 +28,7 @@ interface algorithmStateType {
   current_to_goal_distance: number;
   best_distance: number;
   path_length: number;
+  time: number;
 };
 
 /*
@@ -118,7 +121,8 @@ export class RosProvider {
       initial_to_goal_distance: 0,
       current_to_goal_distance: 0,
       best_distance: 0,
-      path_length: 0
+      path_length: 0,
+      time: 0
     }
     this.presentLoadingInit();
   }
@@ -631,5 +635,11 @@ export class RosProvider {
       duration: 3000
     });
     toast.present();
+  }
+
+  // Refreser function
+  doRefresh(refresher) {
+    this.loadSettings();
+    refresher.complete();
   }
 }
