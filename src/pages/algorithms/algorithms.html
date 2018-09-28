@@ -107,7 +107,7 @@
               <ion-label>Fixed Frame</ion-label>
               <ion-select interface="action-sheet" [(ngModel)]="fixed_frame" (ionChange)="showROSMarkers()" #selectFrame>
                 <ion-option value="odom">Odom</ion-option>
-                <ion-option value="RosAria/pose">RosAria/pose</ion-option>
+                <ion-option value="base_link">Base Link</ion-option>
               </ion-select>
             </ion-item>
             <button ion-button outline block small (click)="openSelectFrame()">
