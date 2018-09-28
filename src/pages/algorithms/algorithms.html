@@ -53,10 +53,6 @@
 </ion-header>
 
 <ion-content>
-  <ion-refresher (ionRefresh)="rosProvider.doRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
   <ng-container *ngIf="rosProvider.connection | async as con; else loadingBlock">
     <ng-container *ngIf="con == 1; else offlineWS">
 
@@ -105,7 +101,8 @@
           <ion-col col-4>
             <ion-item [hidden]="true">
               <ion-label>Fixed Frame</ion-label>
-              <ion-select interface="action-sheet" [(ngModel)]="fixed_frame" (ionChange)="showROSMarkers()" #selectFrame>
+              <ion-select interface="action-sheet" [(ngModel)]="fixed_frame" (ionChange)="showROSMarkers()"
+                #selectFrame>
                 <ion-option value="odom">Odom</ion-option>
                 <ion-option value="base_link">Base Link</ion-option>
               </ion-select>
@@ -117,7 +114,8 @@
           <ion-col col-4>
             <ion-item [hidden]="true">
               <ion-label>Namespace</ion-label>
-              <ion-select interface="action-sheet" [(ngModel)]="namespace" (ionChange)="rosProvider.changeNamespace(namespace)" #selectNamespace>
+              <ion-select interface="action-sheet" [(ngModel)]="namespace" (ionChange)="rosProvider.changeNamespace(namespace)"
+                #selectNamespace>
                 <ion-option value="" selected="true">All</ion-option>
                 <ion-option value="bug0">Bug0</ion-option>
                 <ion-option value="bug1">Bug1</ion-option>
@@ -139,7 +137,8 @@
               <ion-select interface="action-sheet" [(ngModel)]="isLaserOn" (ionChange)="rosProvider.setLaserClientSubscribe(isLaserOn)"
                 #selectLaser>
                 <ion-option value="0" selected="true">Off</ion-option>
-                <ion-option value="1">On</ion-option>
+                <ion-option value="1">Gazebo</ion-option>
+                <ion-option value="2">Hokuyo</ion-option>
               </ion-select>
             </ion-item>
             <button ion-button outline block small (click)="openSelectLaser()">
@@ -210,7 +209,8 @@
             <ion-item>
               Robot Pose
               <ion-note item-end text-wrap>
-                X: {{rosProvider.algorithmState.pose_x | number}} Y: {{rosProvider.algorithmState.pose_y | number}} Yaw: {{rosProvider.algorithmState.yaw
+                X: {{rosProvider.algorithmState.pose_x | number}} Y: {{rosProvider.algorithmState.pose_y | number}}
+                Yaw: {{rosProvider.algorithmState.yaw
                 |number}}
               </ion-note>
             </ion-item>
@@ -225,7 +225,8 @@
               </ion-item-divider>
               <ion-item>
                 <ion-label>Algorithm</ion-label>
-                <ion-select interface="action-sheet" [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()" disabled>
+                <ion-select interface="action-sheet" [(ngModel)]="rosProvider.bugServiceRequest.algorithm" (ionChange)="checkOpt()"
+                  disabled>
                   <ion-option value="0" selected="true">Bug0</ion-option>
                   <ion-option value="1">Bug1</ion-option>
                   <ion-option value="2">Bug2</ion-option>
@@ -322,7 +323,8 @@
 
     <ng-template #loadingBlock>
       <h2>
-        <ion-spinner></ion-spinner>Loading</h2>
+        <ion-spinner></ion-spinner>Loading
+      </h2>
     </ng-template>
 
   </ng-container>

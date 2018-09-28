@@ -173,7 +173,7 @@ export class RosProvider {
 
       if (len == 0) {
         this.runInfo = [];
-        if(message.node_state > 0)
+        if (message.node_state > 0)
           this.runInfo.push(message);
       } else {
         let bugState = this.runInfo[len - 1].bug_state;
@@ -515,19 +515,21 @@ export class RosProvider {
   }
 
   setLaserClientSubscribe(val: number) {
-    if (this.laserScanClient) {
-      if (val == 0) {
+
+    if (val == 0) {
+      if (this.laserScanClient) {
         console.log("Laser unsubscribe : ", this.marker_viewer.scene.children.length);
         //this.marker_viewer.scene.remove.apply(this.marker_viewer.scene, this.marker_viewer.scene.children);
         this.laserScanClient.unsubscribe();
         this.laserScanClient = undefined;
-      } else if (val == 1) {
-        console.log("Laser subscribe");
-        this.laserScanClient.subscribe();
       }
     } else {
-      let sim = Number(this.bugServiceRequest.simulation) == 1 ? true : false;
-      let topic = sim ? '/p3dx/laser/scan' : '/scan';
+      if (this.laserScanClient) {
+        this.laserScanClient.unsubscribe();
+        this.laserScanClient = undefined;
+      }
+
+      let topic = val == 1 ? '/p3dx/laser/scan' : '/scan';
 
       // Setup the marker client.
       this.laserScanClient = new ROS3D.LaserScan({
@@ -539,6 +541,9 @@ export class RosProvider {
         messageRatio: 3,
         rootObject: this.marker_viewer.scene
       });
+
+      console.log("Laser subscribe");
+      this.laserScanClient.subscribe();
     }
 
   }
